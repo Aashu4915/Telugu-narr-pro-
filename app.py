@@ -5,28 +5,24 @@ import requests
 import base64
 import json
 
-# --- Sarvam AI Premium Logic (FIXED FOR ENCODING) ---
+# --- Sarvam AI Premium Logic ---
 def generate_sarvam_voice(text, speaker, api_key):
     url = "https://api.sarvam.ai/text-to-speech"
-    
-    # Clean the API key to remove accidental spaces
     api_key = api_key.strip()
     
     payload = {
         "inputs": [text],
         "target_language_code": "te-IN",
         "speaker": speaker,
-        "model": "bulbul:v3"  # Upgraded to v3 as per your screenshot
+        "model": "bulbul:v3"
     }
     
-    # Explicitly set headers to handle UTF-8 Telugu characters
     headers = {
         "api-subscription-key": api_key,
         "Content-Type": "application/json; charset=utf-8"
     }
 
     try:
-        # We use json.dumps and encode to utf-8 to prevent 'latin-1' errors
         response = requests.post(
             url, 
             data=json.dumps(payload).encode('utf-8'), 
@@ -37,7 +33,7 @@ def generate_sarvam_voice(text, speaker, api_key):
             audio_content = response.json()["audios"][0]
             return base64.b64decode(audio_content)
         else:
-            st.error(f"Sarvam API Error ({response.status_code}): {response.text}")
+            st.error(f"Sarvam API Error: {response.text}")
             return None
     except Exception as e:
         st.error(f"Connection Error: {str(e)}")
@@ -62,10 +58,18 @@ engine = st.radio("Choose Engine", ["Premium (Natural Voices)", "Standard (Free 
 script = st.text_area("Telugu Script", placeholder="ఇక్కడ మీ కథను పేస్ట్ చేయండి...", height=250)
 
 if engine == "Premium (Natural Voices)":
-    # Updated speaker list for Bulbul v3
-    speaker = st.selectbox("Select Natural Speaker", ["mahesh", "arvind", "meera", "pavithra", "shubh"])
-    if not api_key_input:
-        st.info("💡 Please enter your API key in the sidebar.")
+    # These are the correct names for Bulbul v3 based on the error message
+    # Categorized for easier choice
+    male_voices = ["vijay", "aditya", "gokul", "mani", "shubh", "anand", "tarun", "sunny"]
+    female_voices = ["shruti", "kavitha", "shreya", "roopa", "tanya", "priya", "neha", "pooja"]
+    
+    speaker = st.selectbox("Select Natural Speaker", male_voices + female_voices)
+    
+    if "vijay" in speaker or "aditya" in speaker:
+        st.caption("Tip: Vijay and Aditya are great for serious narrations.")
+    elif "shruti" in speaker or "kavitha" in speaker:
+        st.caption("Tip: Shruti and Kavitha are great for stories.")
+
 else:
     speaker = st.selectbox("Select Backup Voice", ["Male", "Female"])
 
